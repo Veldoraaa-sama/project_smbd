@@ -1,4 +1,6 @@
 <?php
+
+// aku adalah adit spo jarwo
 // transaksi.php - Transaction Page with CRUD functionality
 require_once 'config.php';
 session_start();
