@@ -1,23 +1,29 @@
 <?php
-// config.php - Database Configuration (Simplified Version)
-$host = 'localhost';
-$username = 'root';
-$password = '';
-$database = 'tugasakhir';
+// Koneksi MySQLi (untuk query biasa)
+$koneksi = mysqli_connect("localhost", "root", "", "tugasakhir");
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$database", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
+// Cek koneksi MySQLi
+if (!$koneksi) {
+    die("Koneksi database gagal: " . mysqli_connect_error());
 }
 
-// Optional: Check if database objects exist, if not show instruction
+// Nama database (penting untuk fungsi pengecekan objek)
+$database = "tugasakhir";
+
+// Koneksi PDO (untuk pengecekan view, procedure, trigger)
+try {
+    $pdo = new PDO("mysql:host=localhost;dbname=$database", "root", "");
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("PDO Koneksi gagal: " . $e->getMessage());
+}
+
+// Fungsi untuk mengecek apakah objek-objek database tersedia
 function checkDatabaseObjects($pdo, $database) {
     try {
-        // Bangun nama kolom untuk view check
         $columnName = "Tables_in_$database";
+
+        // Cek apakah view 'view_transaksi_detail' ada
         $sql = "SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'VIEW'";
         $result = $pdo->query($sql);
 
@@ -29,26 +35,27 @@ function checkDatabaseObjects($pdo, $database) {
             }
         }
 
-        // Check if stored procedure exists
+        // Cek apakah stored procedure 'HitungTotalSewa' ada
         $procCheck = $pdo->query("SHOW PROCEDURE STATUS WHERE Name = 'HitungTotalSewa'");
 
-        // Check if trigger exists
+        // Cek apakah trigger 'after_insert_transaksi' ada
         $triggerCheck = $pdo->query("SHOW TRIGGERS LIKE 'after_insert_transaksi'");
 
-        // Tampilkan peringatan jika salah satu tidak ditemukan
-        if (!$viewExists || $procCheck->rowCount() == 0 || $triggerCheck->rowCount() == 0) {
-            echo "<div style='background: #f8d7da; color: #721c24; padding: 15px; margin: 10px; border-radius: 5px;'>";
-            echo "<strong>Warning:</strong> Database objects (stored procedures, views, triggers) belum dibuat. ";
-            echo "Silakan jalankan script SQL terlebih dahulu di MySQL.";
-            echo "</div>";
-        }
+        // // Jika salah satu tidak ditemukan, tampilkan peringatan
+        // if (!$viewExists || $procCheck->rowCount() == 0 || $triggerCheck->rowCount() == 0) {
+        //     echo "<div style='background: #f8d7da; color: #721c24; padding: 15px; margin: 10px; border-radius: 5px;'>";
+        //     echo "<strong>Warning:</strong> Beberapa objek database (view, procedure, trigger) belum tersedia.<br>";
+        //     echo "Silakan jalankan script SQL `tugasakhir.sql` terlebih dahulu di phpMyAdmin atau MySQL.";
+        //     echo "</div>";
+        // }
     } catch(Exception $e) {
-        // Abaikan error (atau tampilkan untuk debug)
-        // echo $e->getMessage();
+        // Untuk debug: tampilkan jika perlu
+        // echo "<div style='color: red;'>Pengecekan gagal: " . $e->getMessage() . "</div>";
     }
 }
 
-// Panggil dengan parameter database
+// Jika URL mengandung ?check_db, jalankan pengecekan
 if (isset($_GET['check_db'])) {
     checkDatabaseObjects($pdo, $database);
 }
+?>

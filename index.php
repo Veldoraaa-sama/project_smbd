@@ -1,14 +1,16 @@
 <?php
-// index.php - Homepage
-require_once 'config.php';
-
 session_start();
-if (!isset($_SESSION['login'])) {
+include 'config.php';
+
+if (!isset($_SESSION['username'])) {
     header("Location: login.php");
-    exit;
+    exit();
 }
 
-// Fetch all available cars
+// ✅ Jalankan pengecekan view/procedure/trigger
+checkDatabaseObjects($pdo, $database);
+
+// ✅ Ambil data mobil
 $stmt = $pdo->query("SELECT * FROM mobil ORDER BY id_mobil");
 $cars = $stmt->fetchAll();
 
@@ -35,10 +37,9 @@ $imageMap = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rental Mobil - Home</title>
     <link rel="stylesheet" href="style.css">
-</head>
-<body>
-<style>
-    /* ===== NAVBAR ===== */
+    <style>
+        /* ... gaya CSS tetap ... */
+        /* ===== NAVBAR ===== */
     .navbar {
         background-color: #222;
         color: white;
@@ -107,7 +108,9 @@ $imageMap = [
         padding-top: 100px;
     }
 </style>
-
+    </style>
+</head>
+<body>
 <nav class="navbar">
     <div class="navbar-container">
         <a class="navbar-brand" href="#"><span class="highlight">RENTAL</span> MOBIL KAK VELLL</a>
