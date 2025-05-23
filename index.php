@@ -2,9 +2,16 @@
 // index.php - Homepage
 require_once 'config.php';
 
+session_start();
+if (!isset($_SESSION['login'])) {
+    header("Location: login.php");
+    exit;
+}
+
 // Fetch all available cars
 $stmt = $pdo->query("SELECT * FROM mobil ORDER BY id_mobil");
 $cars = $stmt->fetchAll();
+
 // Peta gambar berdasarkan id_mobil
 $imageMap = [
     1 => 'avanza.jpg',
@@ -65,7 +72,7 @@ $imageMap = [
     .navbar-menu {
         list-style: none;
         display: flex;
-        gap: 5px; /* ⬅️ Jarak antar item menu */
+        gap: 5px;
         margin: 0;
         padding: 8px 15px;
     }
@@ -85,9 +92,13 @@ $imageMap = [
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
 
+    .navbar-logout {
+        margin-left: 15px;
+    }
+
     /* ===== GLOBAL ===== */
     body {
-        padding-top: 100px; /* Memberi ruang untuk navbar */
+        padding-top: 100px;
         margin: 0;
         font-family: Arial, sans-serif;
     }
@@ -103,67 +114,67 @@ $imageMap = [
         <ul class="navbar-menu" id="navbarMenu">
             <li><a href="index.php">Home</a></li>
             <li><a href="tentang.php">About us</a></li>
-            <li><a href="hubungi.php" target="_blank">Contac us</a></li>
+            <li><a href="hubungi.php" target="_blank">Contact us</a></li>
+            <?php if (isset($_SESSION['login'])): ?>
+                <li class="navbar-logout"><a href="logout.php" class="btn btn-danger">Logout</a></li>
+            <?php endif; ?>
         </ul>
     </div>
 </nav>
 
-</div>
-    <div class="container">
-        <?php if (empty($cars)): ?>
-            <div class="alert alert-info">
-                <strong>Info:</strong> Belum ada data mobil tersedia.
-            </div>
-        <?php else: ?>
-            <div class="car-grid">
-                <?php foreach ($cars as $car): ?>
-                    <div class="car-card">
-                        <div class="car-image">
-                            <?php
-                                $imageFile = $imageMap[$car['id_mobil']] ?? null;
-                                if ($imageFile && file_exists("images/$imageFile")):
-                            ?>
-                                <img src="images/<?= htmlspecialchars($imageFile) ?>" alt="Gambar Mobil">
-
-                            <?php else: ?>
-                                <span style="font-size: 48px;">🚙</span>
-                            <?php endif; ?>
-                        </div>
-                        <div class="car-info">
-                            <div class="car-title"><?= htmlspecialchars($car['merek'] . ' ' . $car['tipe']) ?></div>
-                            <div class="car-details">
-                                Tahun: <?= htmlspecialchars($car['tahun']) ?><br>
-                                Plat: <?= htmlspecialchars($car['plat_nomor']) ?><br>
-                                Status: <span class="status-badge status-<?= $car['status'] ?? 'tidak-diketahui' ?>">
-                                    <?= ucfirst($car['status'] ?? 'Tekan Lihat Detail untuk cek') ?>
-                                </span>
-                            </div>
-                            <div class="car-price">
-                                Rp <?= number_format($car['harga_per_hari'], 0, ',', '.') ?>/hari
-                            </div>
-                            <a href="detail.php?id=<?= $car['id_mobil'] ?>" class="btn">
-                                Lihat Detail
-                            </a>
-                        </div>
+<div class="container">
+    <?php if (empty($cars)): ?>
+        <div class="alert alert-info">
+            <strong>Info:</strong> Belum ada data mobil tersedia.
+        </div>
+    <?php else: ?>
+        <div class="car-grid">
+            <?php foreach ($cars as $car): ?>
+                <div class="car-card">
+                    <div class="car-image">
+                        <?php
+                            $imageFile = $imageMap[$car['id_mobil']] ?? null;
+                            if ($imageFile && file_exists("images/$imageFile")):
+                        ?>
+                            <img src="images/<?= htmlspecialchars($imageFile) ?>" alt="Gambar Mobil">
+                        <?php else: ?>
+                            <span style="font-size: 48px;">🚙</span>
+                        <?php endif; ?>
                     </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-    </div>
+                    <div class="car-info">
+                        <div class="car-title"><?= htmlspecialchars($car['merek'] . ' ' . $car['tipe']) ?></div>
+                        <div class="car-details">
+                            Tahun: <?= htmlspecialchars($car['tahun']) ?><br>
+                            Plat: <?= htmlspecialchars($car['plat_nomor']) ?><br>
+                            Status: <span class="status-badge status-<?= $car['status'] ?? 'tidak-diketahui' ?>">
+                                <?= ucfirst($car['status'] ?? 'Tekan Lihat Detail untuk cek') ?>
+                            </span>
+                        </div>
+                        <div class="car-price">
+                            Rp <?= number_format($car['harga_per_hari'], 0, ',', '.') ?>/hari
+                        </div>
+                        <a href="detail.php?id=<?= $car['id_mobil'] ?>" class="btn">
+                            Lihat Detail
+                        </a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+</div>
 
-    <script>
-        // Interaktif kartu mobil
-        document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.car-card');
-            cards.forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-10px) scale(1.02)';
-                });
-                card.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0) scale(1)';
-                });
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.car-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
             });
         });
-    </script>
+    });
+</script>
 </body>
 </html>

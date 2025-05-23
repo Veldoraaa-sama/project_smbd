@@ -1,7 +1,4 @@
 <?php
-
-// aku adalah adit spo jarwo
-// transaksi.php - Transaction Page with CRUD functionality
 require_once 'config.php';
 session_start();
 
@@ -9,7 +6,7 @@ if (!isset($_SESSION['booking_data'])) {
     header('Location: index.php');
     exit;
 }
-
+    
 $booking_data = $_SESSION['booking_data'];
 $error = '';
 $success = '';
